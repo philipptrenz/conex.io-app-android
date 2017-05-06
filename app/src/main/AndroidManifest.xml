@@ -9,7 +9,6 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name="io.conex.app.MainActivity">
@@ -20,17 +19,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DeviceListActivity"
-            android:label="@string/title_device_list"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".DeviceDetailActivity"
-            android:label="@string/title_device_detail"
-            android:parentActivityName=".DeviceListActivity"
+            android:name="io.conex.app.DevicesActivity"
+            android:label="@string/title_activity_devices"
+            android:parentActivityName="io.conex.app.MainActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.conex.brandnewsmarthomeapp.DeviceListActivity" />
+                android:value="io.conex.app.MainActivity" />
         </activity>
     </application>
 

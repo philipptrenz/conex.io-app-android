@@ -34,8 +34,8 @@ import com.google.gson.annotations.SerializedName;
  **/
 @ApiModel(description = "Generic slider switch")
 public class Dimmer extends Function {
-  
-  @SerializedName("function_id")
+
+  //@SerializedName("function_id") - Has to be commented out for polymorphic object mapping via GSON and RuntimeTypeAdapterFactory.java
   private String functionId = null;
   @SerializedName("value")
   private Integer value = null;

@@ -36,7 +36,7 @@ import com.google.gson.annotations.SerializedName;
 @ApiModel(description = "Generic temperature sensor")
 public class Temperature extends Function {
   
-  @SerializedName("function_id")
+  //@SerializedName("function_id") - Has to be commented out for polymorphic object mapping via GSON and RuntimeTypeAdapterFactory.java
   private String functionId = null;
   @SerializedName("value")
   private BigDecimal value = null;

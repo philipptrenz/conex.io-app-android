@@ -35,7 +35,7 @@ import com.google.gson.annotations.SerializedName;
 @ApiModel(description = "Generic On-Off switch")
 public class OnOff extends Function {
   
-  @SerializedName("function_id")
+  //@SerializedName("function_id") - Has to be commented out for polymorphic object mapping via GSON and RuntimeTypeAdapterFactory.java
   private String functionId = null;
   @SerializedName("isOn")
   private Boolean isOn = null;

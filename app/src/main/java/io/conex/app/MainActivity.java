@@ -1,6 +1,7 @@
 package io.conex.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
 import android.net.ConnectivityManager;
@@ -202,9 +203,12 @@ public class MainActivity extends AppCompatActivity {
     private void switchActivity() {
         Log.d("api", "switching activity ...");
 
-        // TODO
+        Intent myIntent = new Intent(MainActivity.this, DevicesActivity.class);
+        //myIntent.putExtra("key", value); //Optional parameters
+        MainActivity.this.startActivity(myIntent);
     }
 
+    /*
     private void testApi() {
         Log.d("api", "testing api ...");
 
@@ -244,5 +248,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).start();
-    }
+    }*/
 }
