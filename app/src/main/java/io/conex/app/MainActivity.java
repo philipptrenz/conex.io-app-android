@@ -1,4 +1,4 @@
-package io.conex.brandnewsmarthomeapp;
+package io.conex.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -6,6 +6,7 @@ import android.graphics.drawable.Animatable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,6 +28,7 @@ import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import io.conex.brandnewsmarthomeapp.R;
 import io.swagger.client.ApiException;
 import io.swagger.client.ApiInvoker;
 import io.swagger.client.api.DefaultApi;
@@ -59,35 +61,43 @@ public class MainActivity extends AppCompatActivity {
 
         if (urlFromPreferences != null) {
             apiUrl = urlFromPreferences;
+        }
 
-            urlText = (EditText)findViewById(R.id.api_url);
-            urlText.setText(apiUrl);
+        urlText = (EditText)findViewById(R.id.api_url);
+        headline = (TextView) findViewById(R.id.headline);
+        subText = (TextView) findViewById(R.id.subtext);
+        button = (Button) findViewById(R.id.button);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        animatedCheck = (ImageView) findViewById(R.id.animatedCheck);
 
-            switchActivity();
-        } else {
-            urlText = (EditText)findViewById(R.id.api_url);
-            headline = (TextView) findViewById(R.id.headline);
-            subText = (TextView) findViewById(R.id.subtext);
-            button = (Button) findViewById(R.id.button);
-            progressBar = (ProgressBar) findViewById(R.id.progressBar);
-            animatedCheck = (ImageView) findViewById(R.id.animatedCheck);
 
-            button.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    // Perform action on click
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            // Perform action on click
 
-                    String url = urlText.getText().toString();
-                    if (!url.isEmpty()) {
-                        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                            url = "http://" + url;
-                        }
-                        apiUrl = url;
-                        isAPIReachable(url);
-                    } else {
-                        updateUiOnApiReachability(false);
-                    }
+            String url = urlText.getText().toString();
+            if (!url.isEmpty()) {
+                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                    url = "http://" + url;
                 }
-            });
+                apiUrl = url;
+                isAPIReachable(url);
+            } else {
+                updateUiOnApiReachability(false);
+            }
+            }
+        });
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+
+        // url is already set
+        if (apiUrl != null && !apiUrl.isEmpty()) {
+            urlText.setText(apiUrl.replace("http://", "").replace("https://", ""));
+            isAPIReachable(apiUrl);
         }
     }
 
@@ -113,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
         urlText.setFocusable(false);
         urlText.setFocusableInTouchMode(false); // user touches widget on phone with touch screen
         urlText.setClickable(false); // user navigates with wheel and selects widget
+        urlText.setError(null);
         button.setClickable(false);
     }
 
@@ -128,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (!isReachable) {
             urlText.requestFocus();
-            urlText.setText("");
             urlText.setError("API is not reachable, please check again!");
             imm.showSoftInput(urlText, InputMethodManager.SHOW_IMPLICIT);
         } else {
@@ -144,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
     private void isAPIReachable(final String stringURL) {
 
         Log.d("api", "testing reachability @ "+stringURL);
-
         updateUiOnDoingNetworkRequest();
         final Context context = this.getApplicationContext();
 
@@ -160,26 +169,26 @@ public class MainActivity extends AppCompatActivity {
                 if (netInfo != null && netInfo.isConnected()) {
                     try {
                         HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
-                        urlc.setConnectTimeout(5 * 1000);          // 5 s.
+                        urlc.setConnectTimeout(3 * 1000);          // 4 s.
+
                         urlc.connect();
                         if (urlc.getResponseCode() == 200) {        // 200 = "OK" code (http connection is fine).
-                            Log.d("api", "API is reachable");
-                            updateUIOnRequestFinished(true);
+                            updateUIOnRequestFinished(true, "");
                         } else {
-                            Log.d("api", "API is NOT reachable");
-                            updateUIOnRequestFinished(false);
+                            updateUIOnRequestFinished(false, "no positive response code ("+urlc.getResponseCode()+")");
                         }
                     } catch (MalformedURLException e1) {
-                        updateUIOnRequestFinished(false);
-                        Log.d("api", "API is NOT reachable\n"+e1.getStackTrace());
+                        updateUIOnRequestFinished(false, e1.getMessage());
                     } catch (IOException e) {
-                        updateUIOnRequestFinished(false);
-                        Log.d("api", "API is NOT reachable\n"+e.getStackTrace());
+                        updateUIOnRequestFinished(false, e.getMessage());
                     }
+                } else {
+                    updateUIOnRequestFinished(false, "no network connection?");
                 }
             }
 
-            private void updateUIOnRequestFinished(final boolean isReachable) {
+            private void updateUIOnRequestFinished(final boolean isReachable, final String message) {
+                Log.d("api", "API is "+(isReachable ? "": "NOT ")+"reachable: "+message);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
