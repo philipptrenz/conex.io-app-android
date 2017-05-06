@@ -36,14 +36,14 @@ import com.google.gson.annotations.SerializedName;
 public class Dimmer extends Function {
 
   //@SerializedName("function_id") - Has to be commented out for polymorphic object mapping via GSON and RuntimeTypeAdapterFactory.java
-  private String functionId = null;
+  //private String functionId = null;
   @SerializedName("value")
   private Integer value = null;
   @SerializedName("timestamp")
   private Date timestamp = null;
 
   /**
-   **/
+   *
   @ApiModelProperty(required = true, value = "")
   public String getFunctionId() {
     return functionId;
@@ -51,7 +51,7 @@ public class Dimmer extends Function {
   public void setFunctionId(String functionId) {
     this.functionId = functionId;
   }
-
+  */
   /**
    * minimum: 0
    * maximum: 255
@@ -84,7 +84,7 @@ public class Dimmer extends Function {
       return false;
     }
     Dimmer dimmer = (Dimmer) o;
-    return (this.functionId == null ? dimmer.functionId == null : this.functionId.equals(dimmer.functionId)) &&
+    return (this.getFunctionId() == null ? dimmer.getFunctionId() == null : this.getFunctionId().equals(dimmer.getFunctionId())) &&
         (this.value == null ? dimmer.value == null : this.value.equals(dimmer.value)) &&
         (this.timestamp == null ? dimmer.timestamp == null : this.timestamp.equals(dimmer.timestamp));
   }
@@ -92,7 +92,7 @@ public class Dimmer extends Function {
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + (this.functionId == null ? 0: this.functionId.hashCode());
+    result = 31 * result + (this.getFunctionId() == null ? 0: this.getFunctionId().hashCode());
     result = 31 * result + (this.value == null ? 0: this.value.hashCode());
     result = 31 * result + (this.timestamp == null ? 0: this.timestamp.hashCode());
     return result;
@@ -103,7 +103,7 @@ public class Dimmer extends Function {
     StringBuilder sb = new StringBuilder();
     sb.append("class Dimmer {\n");
     sb.append("  " + super.toString()).append("\n");
-    sb.append("  functionId: ").append(functionId).append("\n");
+    sb.append("  functionId: ").append(getFunctionId()).append("\n");
     sb.append("  value: ").append(value).append("\n");
     sb.append("  timestamp: ").append(timestamp).append("\n");
     sb.append("}\n");

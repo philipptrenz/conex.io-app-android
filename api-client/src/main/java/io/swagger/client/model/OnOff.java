@@ -36,14 +36,15 @@ import com.google.gson.annotations.SerializedName;
 public class OnOff extends Function {
   
   //@SerializedName("function_id") - Has to be commented out for polymorphic object mapping via GSON and RuntimeTypeAdapterFactory.java
-  private String functionId = null;
+  //private String functionId = null;
+
   @SerializedName("isOn")
   private Boolean isOn = null;
   @SerializedName("timestamp")
   private Date timestamp = null;
 
   /**
-   **/
+   *
   @ApiModelProperty(required = true, value = "")
   public String getFunctionId() {
     return functionId;
@@ -51,7 +52,7 @@ public class OnOff extends Function {
   public void setFunctionId(String functionId) {
     this.functionId = functionId;
   }
-
+   */
   /**
    **/
   @ApiModelProperty(value = "")
@@ -82,7 +83,7 @@ public class OnOff extends Function {
       return false;
     }
     OnOff onOff = (OnOff) o;
-    return (this.functionId == null ? onOff.functionId == null : this.functionId.equals(onOff.functionId)) &&
+    return (this.getFunctionId() == null ? onOff.getFunctionId() == null : this.getFunctionId().equals(onOff.getFunctionId())) &&
         (this.isOn == null ? onOff.isOn == null : this.isOn.equals(onOff.isOn)) &&
         (this.timestamp == null ? onOff.timestamp == null : this.timestamp.equals(onOff.timestamp));
   }
@@ -90,7 +91,7 @@ public class OnOff extends Function {
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + (this.functionId == null ? 0: this.functionId.hashCode());
+    result = 31 * result + (this.getFunctionId() == null ? 0: this.getFunctionId().hashCode());
     result = 31 * result + (this.isOn == null ? 0: this.isOn.hashCode());
     result = 31 * result + (this.timestamp == null ? 0: this.timestamp.hashCode());
     return result;
@@ -101,7 +102,7 @@ public class OnOff extends Function {
     StringBuilder sb = new StringBuilder();
     sb.append("class OnOff {\n");
     sb.append("  " + super.toString()).append("\n");
-    sb.append("  functionId: ").append(functionId).append("\n");
+    sb.append("  functionId: ").append(getFunctionId()).append("\n");
     sb.append("  isOn: ").append(isOn).append("\n");
     sb.append("  timestamp: ").append(timestamp).append("\n");
     sb.append("}\n");

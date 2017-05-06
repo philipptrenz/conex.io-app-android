@@ -37,21 +37,22 @@ import com.google.gson.annotations.SerializedName;
 public class Temperature extends Function {
   
   //@SerializedName("function_id") - Has to be commented out for polymorphic object mapping via GSON and RuntimeTypeAdapterFactory.java
-  private String functionId = null;
+  //private String functionId = null;
   @SerializedName("value")
   private BigDecimal value = null;
   @SerializedName("timestamp")
   private Date timestamp = null;
 
   /**
-   **/
+   **
   @ApiModelProperty(required = true, value = "")
   public String getFunctionId() {
-    return functionId;
+    return getFunctionId();
   }
   public void setFunctionId(String functionId) {
-    this.functionId = functionId;
+    this.getFunctionId() = functionId;
   }
+  /*
 
   /**
    * Temperature value in Kelvin
@@ -86,7 +87,7 @@ public class Temperature extends Function {
       return false;
     }
     Temperature temperature = (Temperature) o;
-    return (this.functionId == null ? temperature.functionId == null : this.functionId.equals(temperature.functionId)) &&
+    return (this.getFunctionId() == null ? temperature.getFunctionId() == null : this.getFunctionId().equals(temperature.getFunctionId())) &&
         (this.value == null ? temperature.value == null : this.value.equals(temperature.value)) &&
         (this.timestamp == null ? temperature.timestamp == null : this.timestamp.equals(temperature.timestamp));
   }
@@ -94,7 +95,7 @@ public class Temperature extends Function {
   @Override
   public int hashCode() {
     int result = 17;
-    result = 31 * result + (this.functionId == null ? 0: this.functionId.hashCode());
+    result = 31 * result + (this.getFunctionId() == null ? 0: this.getFunctionId().hashCode());
     result = 31 * result + (this.value == null ? 0: this.value.hashCode());
     result = 31 * result + (this.timestamp == null ? 0: this.timestamp.hashCode());
     return result;
@@ -105,7 +106,7 @@ public class Temperature extends Function {
     StringBuilder sb = new StringBuilder();
     sb.append("class Temperature {\n");
     sb.append("  " + super.toString()).append("\n");
-    sb.append("  functionId: ").append(functionId).append("\n");
+    sb.append("  functionId: ").append(getFunctionId()).append("\n");
     sb.append("  value: ").append(value).append("\n");
     sb.append("  timestamp: ").append(timestamp).append("\n");
     sb.append("}\n");

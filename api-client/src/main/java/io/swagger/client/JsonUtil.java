@@ -89,8 +89,38 @@ public class JsonUtil {
         return gsonBuilder.create();
     }
 
+
+    /*
+     * Created second GSON for serialization because RuntimeTypeAdaptorFactory crashes with function_id serialization
+     */
+    public static Gson getGson2() {
+        GsonBuilder gsonBuilder2 = new GsonBuilder();
+        gsonBuilder2.serializeNulls();
+        gsonBuilder2.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+        /*
+         * Needed to create own deserialize method for time mapping
+         */
+        gsonBuilder2.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
+            public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                String date = json.getAsString();
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                //format.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+                try {
+                    return format.parse(date);
+                } catch (ParseException exp) {
+                    Log.e("Failed to parse Date:", exp.getMessage());
+                    return null;
+                }
+            }
+        });
+
+        return gsonBuilder2.create();
+    }
+
     public static String serialize(Object obj) {
-        return getGson().toJson(obj);
+        return getGson2().toJson(obj);
     }
 
     public static <T> T deserializeToList(String jsonString, Class cls) {
