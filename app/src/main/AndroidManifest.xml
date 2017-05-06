@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="io.conex.brandnewsmarthomeapp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="io.conex.brandnewsmarthomeapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -18,6 +19,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".DeviceListActivity"
+            android:label="@string/title_device_list"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".DeviceDetailActivity"
+            android:label="@string/title_device_detail"
+            android:parentActivityName=".DeviceListActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="io.conex.brandnewsmarthomeapp.DeviceListActivity" />
+        </activity>
+        <activity
+            android:name=".DevicesActivity"
+            android:label="@string/title_activity_devices"
+            android:theme="@style/AppTheme"></activity>
     </application>
 
 </manifest>

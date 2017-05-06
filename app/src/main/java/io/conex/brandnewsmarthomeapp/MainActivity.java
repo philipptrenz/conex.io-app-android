@@ -1,6 +1,7 @@
 package io.conex.brandnewsmarthomeapp;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private Button button;
     private ProgressBar progressBar;
     private ImageView animatedCheck;
+    private SharedPreferences sharedPref;
 
     String apiUrl = null;
 
@@ -50,29 +52,43 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        urlText = (EditText)findViewById(R.id.api_url);
-        headline = (TextView) findViewById(R.id.headline);
-        subText = (TextView) findViewById(R.id.subtext);
-        button = (Button) findViewById(R.id.button);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        animatedCheck = (ImageView) findViewById(R.id.animatedCheck);
+        Context context = this.getApplicationContext();
+        sharedPref = context.getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Perform action on click
+        String urlFromPreferences = sharedPref.getString(getString(R.string.api_url_key), null);
 
-                String url = urlText.getText().toString();
-                if (!url.isEmpty()) {
-                    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                        url = "http://" + url;
+        if (urlFromPreferences != null) {
+            apiUrl = urlFromPreferences;
+
+            urlText = (EditText)findViewById(R.id.api_url);
+            urlText.setText(apiUrl);
+
+            switchActivity();
+        } else {
+            urlText = (EditText)findViewById(R.id.api_url);
+            headline = (TextView) findViewById(R.id.headline);
+            subText = (TextView) findViewById(R.id.subtext);
+            button = (Button) findViewById(R.id.button);
+            progressBar = (ProgressBar) findViewById(R.id.progressBar);
+            animatedCheck = (ImageView) findViewById(R.id.animatedCheck);
+
+            button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    // Perform action on click
+
+                    String url = urlText.getText().toString();
+                    if (!url.isEmpty()) {
+                        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                            url = "http://" + url;
+                        }
+                        apiUrl = url;
+                        isAPIReachable(url);
+                    } else {
+                        updateUiOnApiReachability(false);
                     }
-                    apiUrl = url;
-                    isAPIReachable(url);
-                } else {
-                    updateUiOnApiReachability(false);
                 }
-            }
-        });
+            });
+        }
     }
 
     private URL getURL(String url) {
@@ -91,9 +107,7 @@ public class MainActivity extends AppCompatActivity {
         View view = this.getCurrentFocus();
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        animatedCheck.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);
-
         if (view != null) imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         urlText.setFocusable(false);
@@ -106,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
         progressBar.setVisibility(View.INVISIBLE);
-        animatedCheck.setVisibility(View.INVISIBLE);
 
         urlText.setFocusable(true);
         urlText.setFocusableInTouchMode(true); // user touches widget on phone with touch screen
@@ -119,8 +132,12 @@ public class MainActivity extends AppCompatActivity {
             urlText.setError("API is not reachable, please check again!");
             imm.showSoftInput(urlText, InputMethodManager.SHOW_IMPLICIT);
         } else {
-            ((Animatable) animatedCheck.getDrawable()).start();
-            // TODO: implement what to do if api is reachable
+
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(getString(R.string.api_url_key), apiUrl);
+            editor.commit();
+
+            switchActivity();
         }
     }
 
@@ -136,8 +153,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 URL url = getURL(stringURL);
 
-
-                Log.d("api", "From URL host is "+url.getHost()+", path is: "+url.getPath()+", port is "+url.getPort()+" (default: "+url.getDefaultPort()+")");
+                Log.d("api", "From URL host is "+url.getHost()+", path is: "+url.getPath()+", port is "+(url.getPort() == -1 ? url.getDefaultPort() : url.getPort()));
 
                 ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -172,6 +188,12 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         }).start();
+    }
+
+    private void switchActivity() {
+        Log.d("api", "switching activity ...");
+
+        // TODO
     }
 
     private void testApi() {

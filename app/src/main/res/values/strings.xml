@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">conex.io app</string>
+    <string name="preferences_file_key">conex.io.api.app.preferences</string>
+    <string name="api_url_key">conex.io.api.app.apiUrlKey</string>
+    <string name="title_device_list">Devices</string>
+    <string name="title_device_detail">Device Detail</string>
+    <string name="title_activity_devices">DevicesActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 </resources>
