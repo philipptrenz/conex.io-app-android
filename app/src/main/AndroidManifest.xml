@@ -10,7 +10,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/conex.io_theme">
         <activity android:name="io.conex.app.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,7 +22,7 @@
             android:name="io.conex.app.DevicesActivity"
             android:label="@string/title_activity_devices"
             android:parentActivityName="io.conex.app.MainActivity"
-            android:theme="@style/AppTheme">
+            android:theme="@style/conex.io_theme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="io.conex.app.MainActivity" />

@@ -1,5 +1,7 @@
 package io.conex.app;
 
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -17,8 +19,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import io.conex.brandnewsmarthomeapp.R;
+
+import static android.view.View.GONE;
 
 public class DevicesActivity extends AppCompatActivity {
 
@@ -45,10 +50,15 @@ public class DevicesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devices);
 
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //toolbar.setLogo(R.drawable.conex_io_logo_white_small);
+        toolbar.setLogo(R.drawable.logo_styled);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
 
         // Create the adapter that will return a fragment for each of the three
@@ -89,11 +99,13 @@ public class DevicesActivity extends AppCompatActivity {
                 if (position == 0) {
                     OverviewFragment ov = (OverviewFragment) mSectionsPagerAdapter.getRegisteredFragment(position);
                     filterMode = ov.getFilterMode();
+
                 }
                 if (position == 1) {
                     CategoryFragment cat = (CategoryFragment) mSectionsPagerAdapter.getRegisteredFragment(position);
                     filterMode = cat.getFilterMode();
                     filterCategoryId = cat.getFilterCategoryId();
+
                 }
             }
 
@@ -113,16 +125,28 @@ public class DevicesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent myIntent = new Intent(DevicesActivity.this, MainActivity.class);
+                myIntent.putExtra("coming_from_devices_activity", true); //Optional parameters
+                DevicesActivity.this.startActivity(myIntent);
+                return true;
+            case R.id.action_reload:
+                int tab = mViewPager.getCurrentItem();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+                switch (tab) {
+                    case 1:
+                        ((CategoryFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
+                        break;
+                    case 2:
+                        ((DevicesFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
+                        break;
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     /**

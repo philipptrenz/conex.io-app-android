@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ImageView animatedCheck;
     private SharedPreferences sharedPref;
+    private boolean isSettingsRequest;
 
     String apiUrl = null;
 
@@ -54,6 +55,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        isSettingsRequest = false;
+        Bundle extras = getIntent().getExtras();
+        if(extras != null) isSettingsRequest= extras.getBoolean("coming_from_devices_activity");
 
         Context context = this.getApplicationContext();
         sharedPref = context.getSharedPreferences(getString(R.string.preferences_file_key), MODE_PRIVATE);
@@ -203,50 +208,12 @@ public class MainActivity extends AppCompatActivity {
     private void switchActivity() {
         Log.d("api", "switching activity ...");
 
-        Intent myIntent = new Intent(MainActivity.this, DevicesActivity.class);
-        //myIntent.putExtra("key", value); //Optional parameters
-        MainActivity.this.startActivity(myIntent);
+        if (isSettingsRequest) {
+            isSettingsRequest = false;
+        } else {
+            Intent myIntent = new Intent(MainActivity.this, DevicesActivity.class);
+            //myIntent.putExtra("key", value); //Optional parameters
+            MainActivity.this.startActivity(myIntent);
+        }
     }
-
-    /*
-    private void testApi() {
-        Log.d("api", "testing api ...");
-
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-
-                if (apiUrl != null) {
-
-                    DefaultApi api = new DefaultApi();
-                    api.setBasePath(apiUrl);
-
-                    Devices list = null;
-                    try {
-                        Filter filter = new Filter();
-
-                        Log.d("api", ApiInvoker.serialize(filter));
-                        list = api.devicesPost(filter);
-                    } catch (Exception e) {
-
-                        if (e.getMessage() != null) {
-                            Log.e("api", e.getMessage()+":\n"+e.getCause());
-                        } else {
-                            Log.e("api", "test failed, unknown cause");
-                        }
-
-                    }
-
-                    if (list != null) {
-                        for (Device d : list.getDevices()) {
-                            for (Function f : d.getFunctions()) {
-                                Log.d("api", d.getDeviceId()+" has function "+f.getFunctionId());
-                            }
-                        }
-                    }
-                }
-            }
-        }).start();
-    }*/
 }

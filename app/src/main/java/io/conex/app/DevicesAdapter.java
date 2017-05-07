@@ -3,19 +3,25 @@ package io.conex.app;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import io.conex.brandnewsmarthomeapp.R;
+import io.swagger.client.ApiException;
 import io.swagger.client.ApiInvoker;
 import io.swagger.client.api.DefaultApi;
 import io.swagger.client.model.Device;
@@ -36,14 +42,19 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
     private Context context;
     private String url;
+    private DevicesFragment fragment;
     private DefaultApi api;
+    private ArrayList<Device> devices;
 
-    public DevicesAdapter(Context context, ArrayList<Device> devices) {
+    public DevicesAdapter(Context context, ArrayList<Device> devices, DevicesFragment fragment) {
         super(context, 0, devices);
 
         this.context = context;
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preferences_file_key), MODE_PRIVATE);
         this.url = sharedPref.getString(context.getString(R.string.api_url_key), null);
+
+        this.fragment = fragment;
+        this.devices = devices;
 
         DefaultApi api = new DefaultApi();
         api.setBasePath(url);
@@ -61,7 +72,7 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
         TextView device_id = (TextView) convertView.findViewById(R.id.device_id);
         device_id.setText(device.getDeviceId());
 
-        final ToggleButton onoff = (ToggleButton) convertView.findViewById(R.id.function_onoff);
+        final Switch onoff = (Switch) convertView.findViewById(R.id.function_onoff);
         onoff.setVisibility(View.GONE);
 
         final SeekBar dimmer = (SeekBar) convertView.findViewById(R.id.function_slider);
@@ -114,8 +125,13 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
                         Dimmer patch = new Dimmer();
                         patch.setValue(seekBar.getProgress());
-
                         updateApi(device.getDeviceId(), patch);
+
+                        if (seekBar.getProgress() == 0) {
+                            onoff.setChecked(false);
+                        } else {
+                            onoff.setChecked(true);
+                        }
 
                     }
                 });
@@ -139,7 +155,9 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
         filter.setDeviceIds(devices);
         patcher.setFilter(filter);
 
+        // workaround for stupid Gson JSON parser, which absorbs function_id while doing polymorphic mapping.
         patchedFunction.setFunctionId(patchedFunction.getClass().getSimpleName().toLowerCase());
+
         patcher.setFunction(patchedFunction);
 
         new Thread(new Runnable() {
@@ -148,23 +166,20 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
             public void run() {
 
                 if (url != null) {
-
-                    DefaultApi api = new DefaultApi();
-                    api.setBasePath(url);
-
                     try {
-
-                        Log.d("api", "Patching request: "+patcher);
-                        Log.d("api", "Patching request: "+ApiInvoker.serialize(patcher).toString()+"\n"+patcher);
+                        Log.d("api", ApiInvoker.serialize(patcher).toString());
+                        DefaultApi api = new DefaultApi();
+                        api.setBasePath(url);
 
                         api.devicesPatch(patcher);
-
-                    } catch (Exception e) {
-                        if (e.getMessage() != null) {
-                            Log.e("api", e.getMessage()+":\n"+e.getCause());
-                        } else {
-                            Log.e("api", "test failed, unknown cause");
-                        }
+                    } catch (ApiException e) {
+                        Log.e("api", e.getMessage());
+                    } catch (InterruptedException e) {
+                        Log.e("api", e.getMessage());
+                    } catch (ExecutionException e) {
+                        Log.e("api", e.getMessage());
+                    } catch (TimeoutException e) {
+                        Log.e("api", e.getMessage());
                     }
                 }
             }

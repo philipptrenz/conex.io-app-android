@@ -79,8 +79,7 @@
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/api_url"
-        app:srcCompat="@drawable/animated_check" />
+        app:layout_constraintTop_toBottomOf="@+id/api_url" />
 
     <ProgressBar
         android:id="@+id/progressBar"

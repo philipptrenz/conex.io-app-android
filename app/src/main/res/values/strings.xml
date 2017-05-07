@@ -7,4 +7,6 @@
     <string name="title_activity_devices">DevicesActivity</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="reload_data">Reload</string>
+    <string name="note_overview_first">please start at overview</string>
 </resources>

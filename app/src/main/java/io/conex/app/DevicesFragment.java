@@ -42,6 +42,9 @@ public class DevicesFragment extends Fragment {
     private ArrayAdapter<Device> arrayAdapter;
     private ViewPager viewPager;
 
+    private Mode mode;
+    private String categoryId;
+
     public DevicesFragment() {
     }
 
@@ -65,7 +68,7 @@ public class DevicesFragment extends Fragment {
         ListView listView = (ListView) rootView.findViewById(R.id.devices_list_view);
         devicesList = new ArrayList<>();
 
-        arrayAdapter = new DevicesAdapter(getActivity().getApplicationContext(), devicesList);
+        arrayAdapter = new DevicesAdapter(getActivity().getApplicationContext(), devicesList, this);
         listView.setAdapter(arrayAdapter);
 
         Context context = getActivity().getApplicationContext();
@@ -80,6 +83,9 @@ public class DevicesFragment extends Fragment {
     }
 
     public void updateListView(Mode mode, String categoryId) {
+        this.mode = mode;
+        this.categoryId = categoryId;
+
         Filter filter = new Filter();
         List<String> list = new ArrayList<>();
         if (categoryId != null && !categoryId.isEmpty()) {
@@ -102,6 +108,10 @@ public class DevicesFragment extends Fragment {
             }
             doApiRequest(apiUrl, filter);
         }
+    }
+
+    public void updateListView() {
+        updateListView(mode, categoryId);
     }
 
 

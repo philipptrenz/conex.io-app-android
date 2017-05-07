@@ -26,6 +26,7 @@ import io.swagger.client.model.Filter;
 import io.swagger.client.model.Ids;
 
 import static android.content.Context.MODE_PRIVATE;
+import static android.view.View.GONE;
 
 /**
  * Created by philipp on 06.05.17.
@@ -104,6 +105,10 @@ public class CategoryFragment extends Fragment {
         super.onResume();  // Always call the superclass method first
     }
 
+    public void updateListView() {
+        updateListView(filterMode);
+    }
+
     public void updateListView(Mode filterMode) {
 
         final String url = apiUrl;
@@ -141,16 +146,20 @@ public class CategoryFragment extends Fragment {
                                 newIds = api.roomsPost(filter);
                                 ids.addAll(newIds.getIds());
                                 onUIThread(ids);
+                                hideHint();
                                 break;
                             case GROUPS:
                                 newIds = api.groupsPost(filter);
                                 ids.addAll(newIds.getIds());
                                 onUIThread(ids);
+                                hideHint();
                                 break;
                             case FUNCTIONS:
                                 newIds = api.functionsPost(filter);
                                 ids.addAll(newIds.getIds());
                                 onUIThread(ids);
+                                hideHint();
+                                break;
                         }
                     } catch (Exception e) {
                         if (e.getMessage() != null) {
@@ -177,6 +186,11 @@ public class CategoryFragment extends Fragment {
                         }
                     }
                 });
+            }
+
+            private void hideHint(){
+                TextView hintOverview = (TextView) getView().findViewById(R.id.hint_overview);
+                hintOverview.setVisibility(GONE);
             }
         }).start();
     }
