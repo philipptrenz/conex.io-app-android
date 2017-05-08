@@ -1,9 +1,8 @@
 package io.conex.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,13 +16,29 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import io.conex.app.datamodels.CategoryItem;
+import io.conex.app.datamodels.FilterContainer;
+import io.conex.app.datamodels.Mode;
+import io.conex.app.fragments.CategoryFragment;
+import io.conex.app.fragments.DevicesFragment;
+import io.conex.app.fragments.OverviewFragment;
 import io.conex.brandnewsmarthomeapp.R;
-
-import static android.view.View.GONE;
+import io.swagger.client.ApiException;
+import io.swagger.client.ApiInvoker;
+import io.swagger.client.JsonUtil;
+import io.swagger.client.api.DefaultApi;
+import io.swagger.client.model.Device;
+import io.swagger.client.model.Devices;
+import io.swagger.client.model.Function;
+import io.swagger.client.model.Ids;
 
 public class DevicesActivity extends AppCompatActivity {
 
@@ -41,25 +56,27 @@ public class DevicesActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-
-    private Mode filterMode;
-    private String filterCategoryId;
+    private DefaultApi api;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_devices);
 
-
+        // do not rotate!
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        SharedPreferences sharedPref = this.getSharedPreferences(this.getString(R.string.preferences_file_key), MODE_PRIVATE);
+        String url = sharedPref.getString(this.getString(R.string.api_url_key), null);
+
+        api = new DefaultApi();
+        api.setBasePath(url);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setLogo(R.drawable.logo_styled);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -72,23 +89,25 @@ public class DevicesActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 mViewPager.setCurrentItem(tab.getPosition());
                 int position = tab.getPosition();
                 Log.d("ui","Tab "+tab.getPosition()+" selected");
+                final Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(position);
 
-                if (position == 1) {
-                    CategoryFragment cat = (CategoryFragment) mSectionsPagerAdapter.getRegisteredFragment(position);
-                    cat.updateListView(filterMode);
+                switch (position) {
+                    case 1:
+                        requestCategoryIds(FilterContainer.getInstance(), (CategoryFragment) fragment);
+                        break;
+                    case 2:
+                        requestDevices(FilterContainer.getInstance(), (DevicesFragment) fragment);
+                        break;
                 }
-                if (position == 2) {
-                    DevicesFragment dev = (DevicesFragment) mSectionsPagerAdapter.getRegisteredFragment(position);
-                    dev.updateListView(filterMode, filterCategoryId);
-                }
-
             }
 
             @Override
@@ -96,17 +115,6 @@ public class DevicesActivity extends AppCompatActivity {
                 int position = tab.getPosition();
                 Log.d("ui","Tab "+tab.getPosition()+" unselected");
 
-                if (position == 0) {
-                    OverviewFragment ov = (OverviewFragment) mSectionsPagerAdapter.getRegisteredFragment(position);
-                    filterMode = ov.getFilterMode();
-
-                }
-                if (position == 1) {
-                    CategoryFragment cat = (CategoryFragment) mSectionsPagerAdapter.getRegisteredFragment(position);
-                    filterMode = cat.getFilterMode();
-                    filterCategoryId = cat.getFilterCategoryId();
-
-                }
             }
 
             @Override
@@ -114,6 +122,161 @@ public class DevicesActivity extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    private void requestCategoryIds(final FilterContainer filter, final CategoryFragment fragment) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("api", "requesting "+filter.getMode().name().toLowerCase()+" ids");
+                switch(filter.getMode()) {
+                    case FUNCTIONS:
+                        try {
+                            Ids ids = api.functionsPost(filter.getPureFilter());
+                            ArrayList<CategoryItem> items = new ArrayList<CategoryItem>();
+                            for (String id : ids.getIds()) {
+                                if (id == null) continue;
+                                items.add(new CategoryItem(id, Mode.FUNCTIONS));
+                            }
+                            deliverIds(items);
+                        } catch (TimeoutException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case ROOMS:
+                        try {
+                            Ids ids = api.roomsPost(filter.getPureFilter());
+                            ArrayList<CategoryItem> items = new ArrayList<CategoryItem>();
+                            for (String id : ids.getIds()) {
+                                if (id == null) continue;
+                                items.add(new CategoryItem(id, Mode.ROOMS));
+                            }
+                            deliverIds(items);
+                        } catch (TimeoutException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case GROUPS:
+                        try {
+                            Ids ids = api.groupsPost(filter.getPureFilter());
+                            ArrayList<CategoryItem> items = new ArrayList<CategoryItem>();
+                            for (String id : ids.getIds()) {
+                                if (id == null) continue;
+                                items.add(new CategoryItem(id, Mode.GROUPS));
+                            }
+                            deliverIds(items);
+                        } catch (TimeoutException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case ALL:
+                        try {
+                            Devices devices = api.devicesPost(filter.getPureFilter());
+                            HashSet<String> functions = new HashSet<>();
+                            HashSet<String> rooms = new HashSet<>();
+                            HashSet<String> groups = new HashSet<>();
+                            for (Device d : devices.getDevices()) {
+                                for (Function f : d.getFunctions()) {
+                                    f.setFunctionId(JsonUtil.getFunctionId(f));
+                                    functions.add(f.getFunctionId());
+                                }
+                                rooms.addAll(d.getRoomIds());
+                                groups.addAll(d.getGroupIds());
+                            }
+                            ArrayList<CategoryItem> items = new ArrayList<CategoryItem>();
+                            for (String id : functions) {
+                                if (id == null) continue;
+                                items.add(new CategoryItem(id, Mode.FUNCTIONS));
+                            }
+                            for (String id : groups) {
+                                if (id == null) continue;
+                                items.add(new CategoryItem(id, Mode.GROUPS));
+                            }
+                            for (String id : rooms) {
+                                if (id == null) continue;
+                                items.add(new CategoryItem(id, Mode.ROOMS));
+                            }
+                            deliverIds(items);
+                        } catch (TimeoutException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                }
+            }
+
+            private void deliverIds(final List<CategoryItem> ids) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("api", "received "+filter.getMode().name().toLowerCase()+" ids, now updating CategoryFragment list with "+ids.size()+" categories");
+                        fragment.setCategoryList(ids);
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void requestDevices(final FilterContainer filter, final DevicesFragment fragment) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Log.d("api", "requesting devices with filter "+ ApiInvoker.serialize(filter.getPureFilter()).toString());
+                    Devices devices = api.devicesPost(filter.getPureFilter());
+                    for (Device d : devices.getDevices()) {
+                        for (Function f : d.getFunctions()) {
+                            f.setFunctionId(JsonUtil.getFunctionId(f));
+                        }
+                    }
+                    deliverDevices(devices.getDevices());
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ApiException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private void deliverDevices(final List<Device> devices) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("api", "received "+devices.size()+" devices");
+                        fragment.update(devices);
+                    }
+                });
+            }
+        }).start();
     }
 
     @Override
@@ -137,10 +300,10 @@ public class DevicesActivity extends AppCompatActivity {
 
                 switch (tab) {
                     case 1:
-                        ((CategoryFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
+                        //((CategoryFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
                         break;
                     case 2:
-                        ((DevicesFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
+                        //((DevicesFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
                         break;
                 }
                 return true;

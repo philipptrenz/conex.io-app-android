@@ -1,6 +1,5 @@
-package io.conex.app;
+package io.conex.app.fragments;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -11,14 +10,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import io.conex.app.arrayadapters.OverviewAdapter;
+import io.conex.app.datamodels.FilterContainer;
+import io.conex.app.datamodels.Mode;
+import io.conex.app.datamodels.OverviewItem;
 import io.conex.brandnewsmarthomeapp.R;
-import io.swagger.client.model.Device;
 
-import static io.conex.app.Mode.ALL;
+import static io.conex.app.datamodels.Mode.ALL;
 
 /**
  * Created by philipp on 06.05.17.
@@ -36,8 +37,6 @@ public class OverviewFragment extends Fragment {
     private ArrayList<OverviewItem> overview;
     private ArrayAdapter<OverviewItem> arrayAdapter;
     private ViewPager viewPager;
-
-    private Mode filterMode;
 
     public OverviewFragment() {
     }
@@ -74,7 +73,8 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             OverviewItem item = (OverviewItem) parent.getAdapter().getItem(position);
-            filterMode = item.mode;
+            FilterContainer.getInstance().setMode(item.mode);
+            FilterContainer.getInstance().resetFilterIds();
 
             Log.d("api", "selected: "+item.name+", "+item.mode.name());
 
@@ -86,54 +86,7 @@ public class OverviewFragment extends Fragment {
             }
         });
 
-        filterMode = ALL;
-
         return rootView;
-    }
-
-    public Mode getFilterMode() {
-        return filterMode;
-    }
-
-    private class OverviewItem {
-
-        String name;
-        String description;
-        Mode mode;
-
-        OverviewItem(String name, Mode mode, String description) {
-            this.name = name;
-            this.description = description;
-            this.mode = mode;
-        }
-    }
-
-    private class OverviewAdapter extends ArrayAdapter<OverviewItem> {
-
-        public OverviewAdapter(Context context, ArrayList<OverviewItem> categories) {
-            super(context, 0, categories);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-
-            OverviewItem item = getItem(position);
-
-            // Check if an existing view is being reused, otherwise inflate the view
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.overview_list_item, parent, false);
-            }
-
-            // Lookup view for data population
-            TextView name = (TextView) convertView.findViewById(R.id.overview_name);
-            TextView description = (TextView) convertView.findViewById(R.id.overview_description);
-            // Populate the data into the template view using the data object
-            name.setText(item.name);
-            description.setText(item.description);
-            // Return the completed view to render on screen
-
-            return convertView;
-        }
     }
 }
 

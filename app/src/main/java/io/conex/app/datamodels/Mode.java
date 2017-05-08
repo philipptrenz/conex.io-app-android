@@ -1,4 +1,4 @@
-package io.conex.app;
+package io.conex.app.datamodels;
 
 /**
  * Created by philipp on 06.05.17.

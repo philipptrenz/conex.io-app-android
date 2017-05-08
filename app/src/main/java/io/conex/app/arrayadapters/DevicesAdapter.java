@@ -1,4 +1,4 @@
-package io.conex.app;
+package io.conex.app.arrayadapters;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import io.conex.app.fragments.DevicesFragment;
 import io.conex.brandnewsmarthomeapp.R;
 import io.swagger.client.ApiException;
 import io.swagger.client.ApiInvoker;
@@ -42,18 +43,17 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
     private Context context;
     private String url;
-    private DevicesFragment fragment;
     private DefaultApi api;
     private ArrayList<Device> devices;
+    private Filter filter;
 
-    public DevicesAdapter(Context context, ArrayList<Device> devices, DevicesFragment fragment) {
+    public DevicesAdapter(Context context, ArrayList<Device> devices) {
         super(context, 0, devices);
 
         this.context = context;
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preferences_file_key), MODE_PRIVATE);
         this.url = sharedPref.getString(context.getString(R.string.api_url_key), null);
 
-        this.fragment = fragment;
         this.devices = devices;
 
         DefaultApi api = new DefaultApi();
@@ -143,6 +143,10 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
 
         return convertView;
+    }
+
+    public void setFilter(Filter filter) {
+        this.filter = filter;
     }
 
 

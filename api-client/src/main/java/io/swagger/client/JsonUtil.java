@@ -35,11 +35,16 @@ import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 
 import io.swagger.client.model.*;
@@ -47,18 +52,44 @@ import io.swagger.client.model.*;
 public class JsonUtil {
     public static GsonBuilder gsonBuilder;
 
+    public static final Class<? extends Function>[] functionSubclasses = new Class[] {
+
+            OnOff.class,
+            Dimmer.class,
+            Temperature.class
+
+    };
+
+    public static String getFunctionId(Function f) {
+        for (Class clazz : JsonUtil.functionSubclasses) {
+            try {
+                clazz.cast(f);
+            } catch (Exception e) {
+                continue;
+            }
+            return getJsonFunctionId(clazz);
+        }
+        return getJsonFunctionId(Function.class);
+    }
+
+    private static String getJsonFunctionId(Class<? extends Function> clazz) {
+        return clazz.getSimpleName().toLowerCase();
+    }
+
+
     static {
 
     /*
      * Added RuntimeTypeAdapterFactory for polymorphic deserialization of json for functions
      * Add new functions with their function_id here!
      */
-        final RuntimeTypeAdapterFactory<Function> typeFactory = RuntimeTypeAdapterFactory
-                .of(Function.class, "function_id") // Here you specify which is the parent class and what field particularizes the child class.
-                .registerSubtype(Function.class, "function")
-                .registerSubtype(OnOff.class, "onoff") // if the flag equals the class name, you can skip the second parameter. This is only necessary, when the "type" field does not equal the class name.
-                .registerSubtype(Dimmer.class, "dimmer")
-                .registerSubtype(Temperature.class, "temperature");
+        RuntimeTypeAdapterFactory<Function> typeFactory = RuntimeTypeAdapterFactory
+            .of(Function.class, "function_id")
+            // Here you specify which is the parent class and what field particularizes the child class.
+            .registerSubtype(Function.class, "function")
+            .registerSubtype(OnOff.class, "onoff") // if the flag equals the class name, you can skip the second parameter. This is only necessary, when the "type" field does not equal the class name.
+            .registerSubtype(Dimmer.class, "dimmer")
+            .registerSubtype(Temperature.class, "temperature");
 
         gsonBuilder = new GsonBuilder();
         gsonBuilder.serializeNulls();
