@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import io.conex.app.arrayadapters.DevicesAdapter;
 import io.conex.brandnewsmarthomeapp.R;
 import io.swagger.client.ApiException;
 import io.swagger.client.ApiInvoker;
@@ -28,6 +29,7 @@ import io.swagger.client.model.Filter;
 import io.swagger.client.model.Function;
 import io.swagger.client.model.OnOff;
 import io.swagger.client.model.Patcher;
+import io.swagger.client.model.Temperature;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.view.View.GONE;
@@ -39,8 +41,7 @@ import static io.conex.brandnewsmarthomeapp.R.id.view;
 
 public class MasterFunction {
 
-    private List<Device> devicesList;
-    private ArrayAdapter<Device> adapter;
+    private DevicesAdapter adapter;
     private String apiUrl;
 
     private LinearLayout wrapper;
@@ -48,8 +49,7 @@ public class MasterFunction {
     private Button masterOnoffOff;
     private SeekBar masterDimmer;
 
-    public MasterFunction(View view, final List<Device> devicesList, final ArrayAdapter<Device> adapter) {
-        this.devicesList = devicesList;
+    public MasterFunction(View view, final DevicesAdapter adapter) {
         this.adapter = adapter;
 
         Context context = view.getContext();
@@ -66,14 +66,7 @@ public class MasterFunction {
                 update.setIsOn(true);
                 updateApi(update);
 
-                for (Device d : devicesList) {
-                    for (Function f : d.getFunctions()) {
-                        if (f instanceof OnOff) {
-                            ((OnOff) f).setIsOn(true);
-                        }
-                    }
-                }
-                adapter.notifyDataSetChanged();
+                updateDeviceFunctionStates(update);
             }
         });
 
@@ -85,14 +78,7 @@ public class MasterFunction {
                 update.setIsOn(false);
                 updateApi(update);
 
-                for (Device d : devicesList) {
-                    for (Function f : d.getFunctions()) {
-                        if (f instanceof OnOff) {
-                            ((OnOff) f).setIsOn(false);
-                        }
-                    }
-                }
-                adapter.notifyDataSetChanged();
+                updateDeviceFunctionStates(update);
             }
         });
 
@@ -101,31 +87,24 @@ public class MasterFunction {
         masterDimmer.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    Dimmer update = new Dimmer();
+                    update.setValue(progress);
+                    updateDeviceFunctionStates(update);
+                }
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+
             }
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int value = seekBar.getProgress();
-                boolean isOn = value > 0 ? true : false;
-
                 Dimmer update = new Dimmer();
                 update.setValue(value);
                 updateApi(update);
 
-
-                for (Device d : devicesList) {
-                    for (Function f : d.getFunctions()) {
-                        if (f instanceof Dimmer) {
-                            ((Dimmer) f).setValue(value);
-                        }
-                        if (f instanceof OnOff) {
-                            ((OnOff) f).setIsOn(isOn);
-                        }
-                    }
-                }
-                adapter.notifyDataSetChanged();
+                updateDeviceFunctionStates(update);
             }
         });
 
@@ -137,6 +116,7 @@ public class MasterFunction {
         masterOnoffOff.setVisibility(GONE);
         masterOnoffOn.setVisibility(GONE);
         masterDimmer.setVisibility(GONE);
+        masterDimmer.setProgress(0);
     }
 
     public void update(List<Device> devicesList) {
@@ -183,6 +163,75 @@ public class MasterFunction {
                     break;
             }
         }
+    }
+
+    private void updateDeviceFunctionStates(Function patch) {
+
+        for (Device d : adapter.getDevices()) {
+            String patchId = patch.getFunctionId();
+
+
+            boolean containsPatch = false;
+            boolean containsOnOff = false;
+            boolean containsDimmer = false;
+            boolean containsTemperature = false;
+
+            for (Function f : d.getFunctions()) {
+                if (f.getFunctionId().equals(patchId)) {
+                    containsPatch = true;
+                }
+                if (f.getFunctionId().equalsIgnoreCase("onoff")) {
+                    containsOnOff = true;
+                }
+                if (f.getFunctionId().equalsIgnoreCase("dimmer")) {
+                    containsDimmer = true;
+                }
+                if (f.getFunctionId().equalsIgnoreCase("temperature")) {
+                    containsTemperature = true;
+                }
+            }
+
+            if (containsPatch) {
+                for (Function f : d.getFunctions()) {
+
+                    if (patch instanceof OnOff) {
+                        OnOff patchOnOff = (OnOff) patch;
+
+                        if (f instanceof OnOff) {
+                            ((OnOff) f).setIsOn(patchOnOff.getIsOn());
+                        }
+
+                        if (f instanceof Dimmer) {
+                            if (!patchOnOff.getIsOn())((Dimmer) f).setValue(0);
+                        }
+
+                    } else if (patch instanceof Dimmer) {
+                        Dimmer patchDimmer = (Dimmer) patch;
+
+                        if (f instanceof Dimmer) {
+                            ((Dimmer) f).setValue(patchDimmer.getValue());
+                        }
+
+                        if (containsOnOff && f instanceof OnOff) {
+                            ((OnOff) f).setIsOn(patchDimmer.getValue() > 0 ? true : false);
+                        }
+
+                        try {
+
+
+                            ((OnOff) f).setIsOn(((OnOff) patch).getIsOn());
+                        } catch (ClassCastException e) { }
+
+
+                    } else if (patch instanceof Temperature) {
+
+                        // ...
+
+                    }
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
     }
 
     private void updateApi(final Function patchedFunction) {

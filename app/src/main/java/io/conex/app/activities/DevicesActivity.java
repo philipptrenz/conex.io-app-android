@@ -1,4 +1,4 @@
-package io.conex.app;
+package io.conex.app.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -235,7 +235,7 @@ public class DevicesActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d("api", "received "+filter.getMode().name().toLowerCase()+" ids, now updating CategoryFragment list with "+ids.size()+" categories");
-                        fragment.setCategoryList(ids);
+                        fragment.update(ids);
                     }
                 });
             }
@@ -298,12 +298,14 @@ public class DevicesActivity extends AppCompatActivity {
             case R.id.action_reload:
                 int tab = mViewPager.getCurrentItem();
 
+                Fragment fragment =  mSectionsPagerAdapter.getRegisteredFragment(tab);
+
                 switch (tab) {
                     case 1:
-                        //((CategoryFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
+                        requestCategoryIds(FilterContainer.getInstance(), ((CategoryFragment) fragment));
                         break;
                     case 2:
-                        //((DevicesFragment) mSectionsPagerAdapter.getRegisteredFragment(tab)).updateListView();
+                        requestDevices(FilterContainer.getInstance(), ((DevicesFragment) fragment));
                         break;
                 }
                 return true;

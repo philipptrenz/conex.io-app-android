@@ -11,7 +11,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/conex.io_theme">
-        <activity android:name="io.conex.app.MainActivity">
+        <activity android:name="io.conex.app.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,13 +19,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="io.conex.app.DevicesActivity"
+            android:name="io.conex.app.activities.DevicesActivity"
             android:label="@string/title_activity_devices"
-            android:parentActivityName="io.conex.app.MainActivity"
+            android:parentActivityName="io.conex.app.activities.MainActivity"
             android:theme="@style/conex.io_theme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.conex.app.MainActivity" />
+                android:value="io.conex.app.activities.MainActivity" />
         </activity>
     </application>
 

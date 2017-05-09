@@ -33,7 +33,7 @@ public class DevicesFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "section_number";
 
     private ArrayList<Device> devicesList;
-    private ArrayAdapter<Device> arrayAdapter;
+    private DevicesAdapter arrayAdapter;
     private ViewPager viewPager;
     private MasterFunction masterFunction;
 
@@ -60,13 +60,14 @@ public class DevicesFragment extends Fragment {
         devicesList = new ArrayList<>();
         arrayAdapter = new DevicesAdapter(getActivity().getApplicationContext(), devicesList);
         listView.setAdapter(arrayAdapter);
-        masterFunction = new MasterFunction(rootView, devicesList, arrayAdapter);
+        masterFunction = new MasterFunction(rootView, arrayAdapter);
 
         return rootView;
     }
 
     public void update(List<Device> devicesList) {
         devicesList.removeAll(Collections.singleton(null));
+        this.devicesList = (ArrayList<Device>) devicesList;
         arrayAdapter.clear();
         arrayAdapter.addAll(devicesList);
         arrayAdapter.notifyDataSetChanged();

@@ -149,6 +149,8 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
         this.filter = filter;
     }
 
+    public ArrayList<Device> getDevices() { return this.devices; }
+
 
     private void updateApi(final String deviceId, final Function patchedFunction) {
 

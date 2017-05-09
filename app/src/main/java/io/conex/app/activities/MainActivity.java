@@ -1,13 +1,10 @@
-package io.conex.app;
+package io.conex.app.activities;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Animatable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,21 +19,10 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import io.conex.brandnewsmarthomeapp.R;
-import io.swagger.client.ApiException;
-import io.swagger.client.ApiInvoker;
-import io.swagger.client.api.DefaultApi;
-import io.swagger.client.model.Device;
-import io.swagger.client.model.Devices;
-import io.swagger.client.model.Filter;
-import io.swagger.client.model.Function;
 
 public class MainActivity extends AppCompatActivity {
 

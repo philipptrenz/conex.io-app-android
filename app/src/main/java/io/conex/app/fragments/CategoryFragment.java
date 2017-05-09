@@ -75,7 +75,7 @@ public class CategoryFragment extends Fragment {
         return rootView;
     }
 
-    public void setCategoryList(List<CategoryItem> categoryList) {
+    public void update(List<CategoryItem> categoryList) {
         categoryList.removeAll(Collections.singleton(null));
 
         arrayAdapter.clear();
