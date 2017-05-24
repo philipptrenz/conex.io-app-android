@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 if (netInfo != null && netInfo.isConnected()) {
                     try {
                         HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
-                        urlc.setConnectTimeout(3 * 1000);          // 4 s.
+                        urlc.setConnectTimeout(5 * 1000);          // 5 s.
 
                         urlc.connect();
                         if (urlc.getResponseCode() == 200) {        // 200 = "OK" code (http connection is fine).

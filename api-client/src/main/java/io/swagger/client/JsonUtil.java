@@ -73,7 +73,7 @@ public class JsonUtil {
     }
 
     private static String getJsonFunctionId(Class<? extends Function> clazz) {
-        return clazz.getSimpleName().toLowerCase();
+        return clazz.getSimpleName();
     }
 
 
@@ -86,10 +86,10 @@ public class JsonUtil {
         RuntimeTypeAdapterFactory<Function> typeFactory = RuntimeTypeAdapterFactory
             .of(Function.class, "function_id")
             // Here you specify which is the parent class and what field particularizes the child class.
-            .registerSubtype(Function.class, "function")
-            .registerSubtype(OnOff.class, "onoff") // if the flag equals the class name, you can skip the second parameter. This is only necessary, when the "type" field does not equal the class name.
-            .registerSubtype(Dimmer.class, "dimmer")
-            .registerSubtype(Temperature.class, "temperature");
+            .registerSubtype(Function.class, "Function")
+            .registerSubtype(OnOff.class, "OnOff") // if the flag equals the class name, you can skip the second parameter. This is only necessary, when the "type" field does not equal the class name.
+            .registerSubtype(Dimmer.class, "Dimmer")
+            .registerSubtype(Temperature.class, "Temperature");
 
         gsonBuilder = new GsonBuilder();
         gsonBuilder.serializeNulls();

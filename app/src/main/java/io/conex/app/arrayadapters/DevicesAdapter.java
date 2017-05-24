@@ -162,7 +162,7 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
         patcher.setFilter(filter);
 
         // workaround for stupid Gson JSON parser, which absorbs function_id while doing polymorphic mapping.
-        patchedFunction.setFunctionId(patchedFunction.getClass().getSimpleName().toLowerCase());
+        patchedFunction.setFunctionId(patchedFunction.getClass().getSimpleName());
 
         patcher.setFunction(patchedFunction);
 
@@ -179,13 +179,17 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
                         api.devicesPatch(patcher);
                     } catch (ApiException e) {
-                        Log.e("api", e.getMessage());
+                        Log.e("api", e.getMessage() != null ? e.getMessage() : "");
+                        e.printStackTrace();
                     } catch (InterruptedException e) {
-                        Log.e("api", e.getMessage());
+                        Log.e("api", e.getMessage() != null ? e.getMessage() : "");
+                        e.printStackTrace();
                     } catch (ExecutionException e) {
-                        Log.e("api", e.getMessage());
+                        Log.e("api", e.getMessage() != null ? e.getMessage() : "");
+                        e.printStackTrace();
                     } catch (TimeoutException e) {
-                        Log.e("api", e.getMessage());
+                        Log.e("api", e.getMessage() != null ? e.getMessage() : "");
+                        e.printStackTrace();
                     }
                 }
             }

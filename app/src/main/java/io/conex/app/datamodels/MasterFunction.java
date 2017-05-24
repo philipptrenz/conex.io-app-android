@@ -143,22 +143,23 @@ public class MasterFunction {
     private void showFunctionsOnFilter(Collection<String> functionIds) {
         functionIds.removeAll(Collections.singleton(null));
         for (String id : functionIds) {
+
             switch (id) {
 
-                case "onoff":
+                case "OnOff":
                     //setFilterWithFunction("onoff");
                     wrapper.setVisibility(View.VISIBLE);
                     masterOnoffOn.setVisibility(View.VISIBLE);
                     masterOnoffOff.setVisibility(View.VISIBLE);
                     break;
 
-                case "dimmer":
+                case "Dimmer":
                     //setFilterWithFunction("dimmer");
                     wrapper.setVisibility(View.VISIBLE);
                     masterDimmer.setVisibility(View.VISIBLE);
                     break;
 
-                case "temperature":
+                case "Temperature":
                     // ...
                     break;
             }
@@ -180,13 +181,13 @@ public class MasterFunction {
                 if (f.getFunctionId().equals(patchId)) {
                     containsPatch = true;
                 }
-                if (f.getFunctionId().equalsIgnoreCase("onoff")) {
+                if (f.getFunctionId().equalsIgnoreCase("OnOff")) {
                     containsOnOff = true;
                 }
-                if (f.getFunctionId().equalsIgnoreCase("dimmer")) {
+                if (f.getFunctionId().equalsIgnoreCase("Dimmer")) {
                     containsDimmer = true;
                 }
-                if (f.getFunctionId().equalsIgnoreCase("temperature")) {
+                if (f.getFunctionId().equalsIgnoreCase("Temperature")) {
                     containsTemperature = true;
                 }
             }
@@ -241,7 +242,7 @@ public class MasterFunction {
             patcher.setFilter(FilterContainer.getInstance().getPureFilter());
 
             // workaround for stupid Gson JSON parser, which absorbs function_id while doing polymorphic mapping.
-            patchedFunction.setFunctionId(patchedFunction.getClass().getSimpleName().toLowerCase());
+            patchedFunction.setFunctionId(patchedFunction.getClass().getSimpleName());
             patcher.setFunction(patchedFunction);
 
             new Thread(new Runnable() {
