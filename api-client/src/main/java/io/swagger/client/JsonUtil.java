@@ -56,7 +56,9 @@ public class JsonUtil {
 
             OnOff.class,
             Dimmer.class,
-            Temperature.class
+            Temperature.class,
+            ColorDimmer.class,
+            ColorTemperature.class
 
     };
 
@@ -89,7 +91,9 @@ public class JsonUtil {
             .registerSubtype(Function.class, "Function")
             .registerSubtype(OnOff.class, "OnOff") // if the flag equals the class name, you can skip the second parameter. This is only necessary, when the "type" field does not equal the class name.
             .registerSubtype(Dimmer.class, "Dimmer")
-            .registerSubtype(Temperature.class, "Temperature");
+            .registerSubtype(Temperature.class, "Temperature")
+            .registerSubtype(ColorDimmer.class, "ColorDimmer")
+            .registerSubtype(ColorTemperature.class, "ColorTemperature");;
 
         gsonBuilder = new GsonBuilder();
         gsonBuilder.serializeNulls();

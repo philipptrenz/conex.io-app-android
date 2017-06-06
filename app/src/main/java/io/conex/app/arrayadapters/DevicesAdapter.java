@@ -3,30 +3,32 @@ package io.conex.app.arrayadapters;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.SystemClock;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import io.conex.app.fragments.DevicesFragment;
+import io.conex.app.dialogs.HSVColorPickerDialog;
 import io.conex.brandnewsmarthomeapp.R;
 import io.swagger.client.ApiException;
 import io.swagger.client.ApiInvoker;
 import io.swagger.client.api.DefaultApi;
+import io.swagger.client.model.ColorDimmer;
 import io.swagger.client.model.Device;
-import io.swagger.client.model.Devices;
 import io.swagger.client.model.Dimmer;
 import io.swagger.client.model.Filter;
 import io.swagger.client.model.Function;
@@ -42,14 +44,17 @@ import static android.content.Context.MODE_PRIVATE;
 public class DevicesAdapter extends ArrayAdapter<Device> {
 
     private Context context;
+    private Activity activity;
     private String url;
     private DefaultApi api;
     private ArrayList<Device> devices;
     private Filter filter;
+    private HashMap<String, Integer> colorSaver;
 
-    public DevicesAdapter(Context context, ArrayList<Device> devices) {
+    public DevicesAdapter(Context context, Activity activity, ArrayList<Device> devices) {
         super(context, 0, devices);
 
+        this.activity = activity;
         this.context = context;
         SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preferences_file_key), MODE_PRIVATE);
         this.url = sharedPref.getString(context.getString(R.string.api_url_key), null);
@@ -58,6 +63,8 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
         DefaultApi api = new DefaultApi();
         api.setBasePath(url);
+
+        colorSaver = new HashMap<>();
     }
 
     @Override
@@ -78,6 +85,9 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
         final SeekBar dimmer = (SeekBar) convertView.findViewById(R.id.function_slider);
         dimmer.setVisibility(View.GONE);
         dimmer.setMax(255);
+
+        final Button colorDimmer = (Button) convertView.findViewById(R.id.function_colordimmer);
+        colorDimmer.setVisibility(View.GONE);
 
         List<Function> functions = device.getFunctions();
 
@@ -101,7 +111,38 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
                     }
                 });
 
-            } else if (f instanceof Dimmer) {
+            }
+            if (f instanceof ColorDimmer) {
+
+                colorDimmer.setVisibility(View.VISIBLE);
+                int currentColor = HSVToColor(((ColorDimmer) f).getHue(), ((ColorDimmer) f).getSaturation(), ((ColorDimmer) f).getValue());
+                setButtonBackgroundColor(currentColor, colorDimmer, device.getDeviceId());
+
+                colorDimmer.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        int currentColor = getButtonBackgroundColor(device.getDeviceId());
+                        final HSVColorPickerDialog cpd = new HSVColorPickerDialog(activity, currentColor, new HSVColorPickerDialog.OnColorSelectedListener() {
+                            @Override
+                            public void colorSelected(Integer color) {
+                                int[] hsv = colorToHSV(color);
+                                ColorDimmer patch = getColorDimmerPatchFromHSV(hsv);
+
+                                dimmer.setProgress(hsv[2]);
+                                setButtonBackgroundColor(color, colorDimmer, device.getDeviceId());
+
+                                updateApi(device.getDeviceId(), patch);
+                            }
+                        });
+                        cpd.setTitle( "Pick a color" );
+                        cpd.show();
+                    }
+                });
+
+
+            }
+            if (f instanceof Dimmer) {
 
                 dimmer.setVisibility(View.VISIBLE);
                 final Dimmer dimmer_func = (Dimmer) f;
@@ -125,6 +166,8 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
                         Dimmer patch = new Dimmer();
                         patch.setValue(seekBar.getProgress());
+                        updateColorFromDimmer(seekBar.getProgress(), colorDimmer, device.getDeviceId());
+
                         updateApi(device.getDeviceId(), patch);
 
                         if (seekBar.getProgress() == 0) {
@@ -132,12 +175,9 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
                         } else {
                             onoff.setChecked(true);
                         }
-
                     }
                 });
 
-            } else {
-                Log.d("api", "found unknown function in device '"+device.getDeviceId()+"', function_id: "+f.getFunctionId());
             }
         }
 
@@ -151,6 +191,74 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
     public ArrayList<Device> getDevices() { return this.devices; }
 
+    private int[] colorToHSV(int color) {
+        float[] hsvFloat = new float[3];
+        int[] hsv = new int[3];
+        Color.colorToHSV(color, hsvFloat);
+
+        hsv[0] = (int) hsvFloat[0];
+        hsv[1] = (int)(256*hsvFloat[1]);
+        hsv[2] = (int)(256*hsvFloat[2]);
+
+        if (hsv[0] > 359) hsv[0] = 359;
+        if (hsv[1] > 255) hsv[1] = 255;
+        if (hsv[1] < 0) hsv[1] = 0;
+        if (hsv[2] > 255) hsv[2] = 255;
+        if (hsv[2] < 0) hsv[2] = 0;
+
+        return hsv;
+    }
+
+    private int HSVToColor(int hue, int sat, int val) {
+        float[] androidHSV = new float[3];
+
+        androidHSV[0] = (float) hue;
+        androidHSV[1] = (float) sat / (float) 256;
+        androidHSV[2] = (float) val / (float) 256;
+
+        return Color.HSVToColor(androidHSV);
+    }
+
+    private ColorDimmer getColorDimmerPatchFromHSV(int[] hsv) {
+        ColorDimmer patch = new ColorDimmer();
+        patch.setValue(hsv[2]);
+        patch.setHue(hsv[0]);
+        patch.setSaturation(hsv[1]);
+
+        return patch;
+    }
+
+    private boolean setButtonBackgroundColor(int color, Button b, String deviceId) {
+
+        colorSaver.put(deviceId, color);
+
+        // fix to display always with value = 1 for brighter colors
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[2] = 1f;
+        color = Color.HSVToColor(hsv);
+
+        try {
+            LayerDrawable layer2 = (LayerDrawable) b.getBackground();
+            GradientDrawable shape = (GradientDrawable) layer2.findDrawableByLayerId(R.id.button_background);
+            shape.setColor(color);// set new background color here
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private void updateColorFromDimmer(int value, Button b, String deviceId) {
+        Integer color = colorSaver.get(deviceId);
+        if (color == null || b == null) return;
+        int[] hsv = colorToHSV(color);
+        int newColor = HSVToColor(hsv[0], hsv[1], value);
+        setButtonBackgroundColor(newColor, b, deviceId);
+    }
+
+    private int getButtonBackgroundColor(String deviceId) {
+        return colorSaver.get(deviceId);
+    }
 
     private void updateApi(final String deviceId, final Function patchedFunction) {
 

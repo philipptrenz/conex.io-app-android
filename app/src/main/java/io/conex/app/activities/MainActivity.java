@@ -22,6 +22,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import io.conex.app.dialogs.HSVColorPickerDialog;
 import io.conex.brandnewsmarthomeapp.R;
 
 public class MainActivity extends AppCompatActivity {
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
             }
             }
         });
+
 
     }
 

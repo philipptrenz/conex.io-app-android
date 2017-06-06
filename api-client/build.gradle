@@ -27,6 +27,7 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 25
+        multiDexEnabled true
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -63,6 +64,7 @@ ext {
 }
 
 dependencies {
+    //,compile 'com.android.support:multidex:1.0.1'
     compile "io.swagger:swagger-annotations:$swagger_annotations_version"
     compile "com.google.code.gson:gson:$gson_version"
     compile "org.apache.httpcomponents:httpcore:$httpcore_version"

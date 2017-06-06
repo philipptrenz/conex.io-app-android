@@ -58,7 +58,7 @@ public class DevicesFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_devices, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.devices_list_view);
         devicesList = new ArrayList<>();
-        arrayAdapter = new DevicesAdapter(getActivity().getApplicationContext(), devicesList);
+        arrayAdapter = new DevicesAdapter(getActivity().getApplicationContext(), getActivity(), devicesList);
         listView.setAdapter(arrayAdapter);
         masterFunction = new MasterFunction(rootView, arrayAdapter);
 
