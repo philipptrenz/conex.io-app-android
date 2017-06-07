@@ -10,26 +10,32 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.FloatMath;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import static android.view.View.GONE;
+
 
 public class HSVColorPickerDialog extends AlertDialog {
 
-    private static final int PADDING_DP = 20;
+    private static final int PADDING_DP = 0;
 
-    private static final int CONTROL_SPACING_DP = 20;
-    private static final int SELECTED_COLOR_HEIGHT_DP = 50;
-    private static final int BORDER_DP = 1;
+    private static final int CONTROL_SPACING_DP = 0;
+    private static final int SELECTED_COLOR_HEIGHT_DP = 0;
+    private static final int BORDER_DP = 0;
     private static final int BORDER_COLOR = Color.BLACK;
 
     private final OnColorSelectedListener listener;
     private int selectedColor;
+    private static HSVColorPickerDialog cpd;
+
 
     public interface OnColorSelectedListener {
         /**
@@ -44,6 +50,8 @@ public class HSVColorPickerDialog extends AlertDialog {
         super(context);
         this.selectedColor = initialColor;
         this.listener = listener;
+
+        cpd = this;
 
         colorWheel = new HSVColorWheel( context );
         valueSlider = new HSVValueSlider( context );
@@ -62,6 +70,8 @@ public class HSVColorPickerDialog extends AlertDialog {
         colorWheel.setId( View.generateViewId() );
         layout.addView( colorWheel, lp );
 
+
+
         int selectedColorHeight = (int) (context.getResources().getDisplayMetrics().density * SELECTED_COLOR_HEIGHT_DP);
 
         FrameLayout valueSliderBorder = new FrameLayout( context );
@@ -73,6 +83,8 @@ public class HSVColorPickerDialog extends AlertDialog {
         lp.addRule( RelativeLayout.BELOW, 1 );
         layout.addView( valueSliderBorder, lp );
 
+
+
         valueSlider.setColor( initialColor, false );
         valueSlider.setListener( new OnColorSelectedListener() {
             @Override
@@ -83,6 +95,7 @@ public class HSVColorPickerDialog extends AlertDialog {
         });
         valueSliderBorder.addView( valueSlider );
 
+
         FrameLayout selectedColorborder = new FrameLayout( context );
         selectedColorborder.setBackgroundColor( BORDER_COLOR );
         lp = new RelativeLayout.LayoutParams( LayoutParams.MATCH_PARENT, selectedColorHeight + 2 * borderSize );
@@ -90,12 +103,20 @@ public class HSVColorPickerDialog extends AlertDialog {
         lp.addRule( RelativeLayout.BELOW, 2 );
         layout.addView( selectedColorborder, lp );
 
+
+
+
         selectedColorView = new View( context );
         selectedColorView.setBackgroundColor( selectedColor );
         selectedColorborder.addView( selectedColorView );
 
-        setButton( BUTTON_NEGATIVE, context.getString( android.R.string.cancel ), clickListener );
-        setButton( BUTTON_POSITIVE, context.getString( android.R.string.ok ), clickListener );
+
+        valueSliderBorder.setVisibility(GONE);
+        selectedColorborder.setVisibility(GONE);
+        this.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+
+        //setButton( BUTTON_NEGATIVE, context.getString( android.R.string.cancel ), clickListener );
+        setButton( BUTTON_POSITIVE, "", clickListener );
 
         setView( layout, padding, padding, padding, padding );
     }
@@ -316,6 +337,11 @@ public class HSVColorPickerDialog extends AlertDialog {
                     }
                     invalidate();
                     return true;
+                case MotionEvent.ACTION_UP:
+                    cpd.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
+                    Log.d("color", "color choosing finished");
+                    return true;
+
             }
             return super.onTouchEvent(event);
         }

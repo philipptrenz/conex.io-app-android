@@ -60,7 +60,7 @@ public class DevicesFragment extends Fragment {
         devicesList = new ArrayList<>();
         arrayAdapter = new DevicesAdapter(getActivity().getApplicationContext(), getActivity(), devicesList);
         listView.setAdapter(arrayAdapter);
-        masterFunction = new MasterFunction(rootView, arrayAdapter);
+        masterFunction = new MasterFunction(rootView, arrayAdapter, this.getActivity());
 
         return rootView;
     }

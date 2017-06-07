@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -91,7 +92,12 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
         List<Function> functions = device.getFunctions();
 
+
+        int index = 0;
         for (final Function f : functions) {
+
+            //Log.d("debug", "loading function "+ index++ +" on device "+position+"\n"+f);
+
             if (f instanceof OnOff) {
                 final OnOff onoff_func = (OnOff) f;
                 boolean isOn = onoff_func.getIsOn();
@@ -107,6 +113,10 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
                         OnOff patch = new OnOff();
                         patch.setIsOn(onoff.isChecked());
 
+                        for (Function f : device.getFunctions()) {
+                            if (f instanceof OnOff) ((OnOff) f).setIsOn(onoff.isChecked());
+                        }
+
                         updateApi(device.getDeviceId(), patch);
                     }
                 });
@@ -115,7 +125,11 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
             if (f instanceof ColorDimmer) {
 
                 colorDimmer.setVisibility(View.VISIBLE);
-                int currentColor = HSVToColor(((ColorDimmer) f).getHue(), ((ColorDimmer) f).getSaturation(), ((ColorDimmer) f).getValue());
+
+                int currentColor = currentColor = HSVToColor(((ColorDimmer) f).getHue(), ((ColorDimmer) f).getSaturation(), ((ColorDimmer) f).getValue());
+
+                if (dimmer != null) dimmer.setProgress(((ColorDimmer) f).getValue());
+
                 setButtonBackgroundColor(currentColor, colorDimmer, device.getDeviceId());
 
                 colorDimmer.setOnClickListener(new View.OnClickListener() {
@@ -127,21 +141,31 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
                             @Override
                             public void colorSelected(Integer color) {
                                 int[] hsv = colorToHSV(color);
+                                hsv[2] = dimmer.getProgress();
+
                                 ColorDimmer patch = getColorDimmerPatchFromHSV(hsv);
 
-                                dimmer.setProgress(hsv[2]);
+                                //dimmer.setProgress(hsv[2]);
                                 setButtonBackgroundColor(color, colorDimmer, device.getDeviceId());
+
+                                for (Function f : device.getFunctions()) {
+                                    if (f instanceof ColorDimmer) {
+                                        ((ColorDimmer) f).setHue(hsv[0]);
+                                        ((ColorDimmer) f).setSaturation(hsv[1]);
+                                    }
+                                }
 
                                 updateApi(device.getDeviceId(), patch);
                             }
                         });
-                        cpd.setTitle( "Pick a color" );
+                        //cpd.setTitle( "Pick a color" );
                         cpd.show();
                     }
                 });
 
 
             }
+
             if (f instanceof Dimmer) {
 
                 dimmer.setVisibility(View.VISIBLE);
@@ -168,6 +192,10 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
                         patch.setValue(seekBar.getProgress());
                         updateColorFromDimmer(seekBar.getProgress(), colorDimmer, device.getDeviceId());
 
+                        for (Function f : device.getFunctions()) {
+                            if (f instanceof Dimmer) ((Dimmer) f).setValue(seekBar.getProgress());
+                        }
+
                         updateApi(device.getDeviceId(), patch);
 
                         if (seekBar.getProgress() == 0) {
@@ -180,7 +208,6 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
             }
         }
-
 
         return convertView;
     }
@@ -230,22 +257,30 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
     private boolean setButtonBackgroundColor(int color, Button b, String deviceId) {
 
-        colorSaver.put(deviceId, color);
+        if (colorToHSV(color)[2] > 0) {
 
-        // fix to display always with value = 1 for brighter colors
-        float[] hsv = new float[3];
-        Color.colorToHSV(color, hsv);
-        hsv[2] = 1f;
-        color = Color.HSVToColor(hsv);
+            colorSaver.put(deviceId, color);
 
-        try {
-            LayerDrawable layer2 = (LayerDrawable) b.getBackground();
-            GradientDrawable shape = (GradientDrawable) layer2.findDrawableByLayerId(R.id.button_background);
-            shape.setColor(color);// set new background color here
-            return true;
-        } catch (Exception ex) {
-            return false;
+            // fix to display always with value = 1 for brighter colors
+            float[] hsv = new float[3];
+            Color.colorToHSV(color, hsv);
+            hsv[2] = 1f;
+            color = Color.HSVToColor(hsv);
+
+            try {
+                LayerDrawable layer2 = (LayerDrawable) b.getBackground();
+                GradientDrawable shape = (GradientDrawable) layer2.findDrawableByLayerId(R.id.button_background);
+                shape.setColor(color);// set new background color here
+                return true;
+            } catch (Exception ex) {
+                return false;
+            }
         }
+        return false;
+    }
+
+    private int getButtonBackgroundColor(String deviceId) {
+        return colorSaver.get(deviceId);
     }
 
     private void updateColorFromDimmer(int value, Button b, String deviceId) {
@@ -256,9 +291,7 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
         setButtonBackgroundColor(newColor, b, deviceId);
     }
 
-    private int getButtonBackgroundColor(String deviceId) {
-        return colorSaver.get(deviceId);
-    }
+
 
     private void updateApi(final String deviceId, final Function patchedFunction) {
 
