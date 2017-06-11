@@ -92,7 +92,6 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
         List<Function> functions = device.getFunctions();
 
-
         int index = 0;
         for (final Function f : functions) {
 
@@ -115,6 +114,9 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
 
                         for (Function f : device.getFunctions()) {
                             if (f instanceof OnOff) ((OnOff) f).setIsOn(onoff.isChecked());
+                            if (onoff.isChecked() && f instanceof Dimmer) {
+                                dimmer.setProgress(((Dimmer) f).getValue());
+                            }
                         }
 
                         updateApi(device.getDeviceId(), patch);
@@ -158,7 +160,6 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
                                 updateApi(device.getDeviceId(), patch);
                             }
                         });
-                        //cpd.setTitle( "Pick a color" );
                         cpd.show();
                     }
                 });
@@ -171,7 +172,9 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
                 dimmer.setVisibility(View.VISIBLE);
                 final Dimmer dimmer_func = (Dimmer) f;
 
-                dimmer.setProgress(dimmer_func.getValue());
+                if (dimmer_func.getValue() != null) {
+                    dimmer.setProgress(dimmer_func.getValue());
+                }
 
                 dimmer.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                     @Override

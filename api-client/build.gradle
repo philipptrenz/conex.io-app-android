@@ -69,7 +69,11 @@ dependencies {
     compile "com.google.code.gson:gson:$gson_version"
     compile "org.apache.httpcomponents:httpcore:$httpcore_version"
     compile "org.apache.httpcomponents:httpmime:$httpmime_version"
-    compile "org.apache.httpcomponents:httpclient-android:$httpclient_version"
+
+    //compile "org.apache.httpcomponents:httpclient-android:$httpclient_version"
+    // not using official httpclient because crashes with internal one
+    compile "cz.msebera.android:httpclient:4.4.1.2"
+
     compile "com.android.volley:volley:${volley_version}"
     testCompile "junit:junit:$junit_version"
     testCompile "org.robolectric:robolectric:${robolectric_version}"

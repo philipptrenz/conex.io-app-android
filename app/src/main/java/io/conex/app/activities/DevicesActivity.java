@@ -75,7 +75,7 @@ public class DevicesActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setLogo(R.drawable.logo_styled);
+        toolbar.setLogo(R.drawable.logo_svg);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Create the adapter that will return a fragment for each of the three

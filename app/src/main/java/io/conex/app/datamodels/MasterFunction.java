@@ -62,6 +62,8 @@ public class MasterFunction {
 
     private enum UpdateMode { ONOFF, DIMMER, COLORDIMMER };
 
+    private UpdateMode currentFunctionMode;
+
     public MasterFunction(View view, final DevicesAdapter adapter, Activity activity) {
         this.adapter = adapter;
         this.activity = activity;
@@ -131,22 +133,22 @@ public class MasterFunction {
         masterColorDimmer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int currentColor = getButtonBackgroundColor();
-                final HSVColorPickerDialog cpd = new HSVColorPickerDialog(currentActivity, currentColor, new HSVColorPickerDialog.OnColorSelectedListener() {
-                    @Override
-                    public void colorSelected(Integer color) {
-                        int[] hsv = colorToHSV(color);
+            int currentColor = getButtonBackgroundColor();
+            final HSVColorPickerDialog cpd = new HSVColorPickerDialog(currentActivity, currentColor, new HSVColorPickerDialog.OnColorSelectedListener() {
+                @Override
+                public void colorSelected(Integer color) {
+                    int[] hsv = colorToHSV(color);
 
-                        ColorDimmer update = new ColorDimmer();
-                        update.setHue(hsv[0]);
-                        update.setSaturation(hsv[1]);
-                        update.setValue(null);
+                    ColorDimmer update = new ColorDimmer();
+                    update.setHue(hsv[0]);
+                    update.setSaturation(hsv[1]);
+                    update.setValue(null);
 
-                        updateApi(update);
-                        updateDeviceFunctionStates(update, UpdateMode.COLORDIMMER);
-                    }
-                });
-                cpd.show();
+                    updateApi(update);
+                    updateDeviceFunctionStates(update, UpdateMode.COLORDIMMER);
+                }
+            });
+            cpd.show();
             }
         });
 
@@ -198,6 +200,10 @@ public class MasterFunction {
             wrapper.setVisibility(View.VISIBLE);
             masterOnoffOn.setVisibility(View.VISIBLE);
             masterOnoffOff.setVisibility(View.VISIBLE);
+
+            if (functionIds.size() == 1) {
+                currentFunctionMode = UpdateMode.ONOFF;
+            }
         }
 
         if (functionIds.contains("ColorDimmer")) {
@@ -206,6 +212,10 @@ public class MasterFunction {
             masterDimmer.setVisibility(View.VISIBLE);
             masterDimmer.setProgress(getAverageDimmerValue());
             setButtonBackgroundColor(getAverageColorValue());
+
+            if (functionIds.size() == 1) {
+                currentFunctionMode = UpdateMode.COLORDIMMER;
+            }
         }
 
         if (functionIds.contains("Dimmer")) {
@@ -213,6 +223,10 @@ public class MasterFunction {
             wrapper.setVisibility(View.VISIBLE);
             masterDimmer.setVisibility(View.VISIBLE);
             masterDimmer.setProgress(getAverageDimmerValue());
+
+            if (functionIds.size() == 1) {
+                currentFunctionMode = UpdateMode.DIMMER;
+            }
         }
 
         if (functionIds.contains("Temperature")) {
@@ -260,8 +274,13 @@ public class MasterFunction {
                             if (f instanceof Dimmer) {
                                 ((Dimmer) f).setValue(((Dimmer) patch).getValue());
                             }
-                            if (((Dimmer) patch).getValue() == 0 && f instanceof OnOff) {
-                                ((OnOff) f).setIsOn(false);
+
+                            if (f instanceof OnOff) {
+                                if (((Dimmer) patch).getValue() > 0) {
+                                    ((OnOff) f).setIsOn(true);
+                                } else {
+                                    ((OnOff) f).setIsOn(false);
+                                }
                             }
 
                         }
@@ -301,8 +320,11 @@ public class MasterFunction {
         for (Device d : adapter.getDevices()) {
             for (Function f : d.getFunctions()){
                 if (f instanceof Dimmer) {
-                    i++;
-                    count += ((Dimmer) f).getValue();
+                    if (((Dimmer) f).getValue() != null) {
+                        i++;
+                        count += ((Dimmer) f).getValue();
+                    }
+
                 }
             }
         }
@@ -396,6 +418,24 @@ public class MasterFunction {
 
             // workaround for stupid Gson JSON parser, which absorbs function_id while doing polymorphic mapping.
             patchedFunction.setFunctionId(patchedFunction.getClass().getSimpleName());
+
+            if (currentFunctionMode != null) {
+                switch (currentFunctionMode) {
+
+                    case ONOFF:
+                        patchedFunction.setFunctionId(OnOff.class.getSimpleName());
+                        break;
+
+                    case DIMMER:
+                        patchedFunction.setFunctionId(Dimmer.class.getSimpleName());
+                        break;
+
+                    case COLORDIMMER:
+                        patchedFunction.setFunctionId(ColorDimmer.class.getSimpleName());
+                        break;
+                }
+            }
+
             patcher.setFunction(patchedFunction);
 
             new Thread(new Runnable() {
