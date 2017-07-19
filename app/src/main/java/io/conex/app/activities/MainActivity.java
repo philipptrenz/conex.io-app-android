@@ -38,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
 
     String apiUrl = null;
 
+    /**
+     * onCreate
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,6 +88,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * onResume
+     */
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
@@ -95,6 +102,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * getURL
+     * @param url
+     * @return
+     */
     private URL getURL(String url) {
         if (!url.isEmpty() && URLUtil.isValidUrl(url)) {
             try {
@@ -107,6 +119,9 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+    /**
+     * updateUiOnDoingNetworkRequest
+     */
     private void updateUiOnDoingNetworkRequest() {
         View view = this.getCurrentFocus();
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -121,6 +136,10 @@ public class MainActivity extends AppCompatActivity {
         button.setClickable(false);
     }
 
+    /**
+     * updateUiOnApiReachability
+     * @param isReachable
+     */
     private void updateUiOnApiReachability(boolean isReachable) {
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -145,6 +164,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * isAPIReachable
+     * @param stringURL
+     */
     private void isAPIReachable(final String stringURL) {
 
         Log.d("api", "testing reachability @ "+stringURL);
@@ -193,6 +216,9 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    /**
+     * switchActivity
+     */
     private void switchActivity() {
         Log.d("api", "switching activity ...");
 

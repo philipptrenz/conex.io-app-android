@@ -40,6 +40,9 @@ import io.swagger.client.model.Devices;
 import io.swagger.client.model.Function;
 import io.swagger.client.model.Ids;
 
+/**
+ * DevicesActivity
+ */
 public class DevicesActivity extends AppCompatActivity {
 
     /**
@@ -58,6 +61,10 @@ public class DevicesActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private DefaultApi api;
 
+    /**
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,6 +132,12 @@ public class DevicesActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * method requestCategoryIds
+     *
+     * @param filter
+     * @param fragment
+     */
     private void requestCategoryIds(final FilterContainer filter, final CategoryFragment fragment) {
 
         new Thread(new Runnable() {
@@ -242,6 +255,11 @@ public class DevicesActivity extends AppCompatActivity {
         }).start();
     }
 
+    /**
+     * method requestDevices
+     * @param filter
+     * @param fragment
+     */
     private void requestDevices(final FilterContainer filter, final DevicesFragment fragment) {
         new Thread(new Runnable() {
             @Override
@@ -279,6 +297,11 @@ public class DevicesActivity extends AppCompatActivity {
         }).start();
     }
 
+    /**
+     *
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -286,6 +309,11 @@ public class DevicesActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     *
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
