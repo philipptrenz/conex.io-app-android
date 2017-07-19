@@ -1,1 +1,3 @@
-If having trouble compiling the project with issue 'Error:Execution failed for task ':app:transformClassesWithDexForDebug'' disable Instant Run in your Android Studio (Preferences > Build, Execution, Deployment > Instant Run > Remove top level tick)
+# conex.io-app-android
+
+This is a demo app for the conex.io API project for android
